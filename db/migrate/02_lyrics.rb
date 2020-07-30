@@ -5,6 +5,7 @@ class Lyrics < ActiveRecord::Migration[5.0]
           t.string :artist
           t.string :genre
           t.text :lyrics
+          t.string :music_video
 
         end
     end

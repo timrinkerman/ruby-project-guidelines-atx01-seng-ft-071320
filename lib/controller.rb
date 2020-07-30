@@ -14,51 +14,49 @@ require 'readline'
 
 
 def intro                                      
-    yes_or_no = PROMPT.yes?("\n\n\nAre you a new user?") do |q|
+    answer = PROMPT.yes?("\n\n\nAre you a new user?") do |q|
        q.suffix 'Y/N'
      end
-   if yes_or_no
+   if answer 
     about 
    else
-    puts "\n" * 35
+  
     login        
    end
 end   
 
 def about
-    puts "\n" * 15
+   
     puts "\sSoundtrack2Mylife will allow you to keep a journal of all the songs who sent you on a feels trip".light_cyan
-    puts "\n" * 5
+
     sign_up = PROMPT.select("SignUP or Exit", %w(SignUP Exit))
     case sign_up
     when "SignUP"
         @@current_user = User.create_user 
-        puts "\n" * 35           
-        yes_or_no = PROMPT.yes?("We can find lyrics from almost any song.\n\s Would you like to try with your favorite track?\n\n\n".light_cyan) do |q|            
+                   
+        answer = PROMPT.yes?("We can find lyrics from almost any song.\n\s Would you like to try with your favorite track?\n\n\n".light_cyan) do |q|            
             q.suffix 'Y/N'
         end
-            if yes_or_no
-                puts "\n" * 35
-                artist = PROMPT.ask("Who is the artist?")
-                song_title = PROMPT.ask("What is the name of the song?")
-                lyric = Lyric.new.find_song(artist, song_title)
-                Controller.display(lyric)
-                save_lyric = PROMPT.select("You can save this awesome track", %W(Save Main))
+            if answer
+               
+                # artist = PROMPT.ask("Who is the artist?")
+                # song_title = PROMPT.ask("What is the name of the song?")
+                lyric = Lyric.new_lyrics
+                Controller.display(@@current_user.lyrics)
+                save_lyric = PROMPT.select("You can save this awesome track or open that sucker up right now and vibe ", %W(Save Listen Main))
                 case save_lyric
                 when "Save"                        
-                    UserLyric.save_lyrics(@@current_user.id,lyric[0].id)
+                    UserLyric.save_lyrics(@@current_user.id,lyric.id)
                     Controller.main
-                else "Main"
+                when "Main"
                     Controller.main
+                when "Listen"
+                    Launchy.open(urls_for_song)
                 end
             else
                 Controller.main
             end
 
-    #     Controller.main
-    # else "Exit"
-    #     Controller.quit
-    # end
 end 
 end
 
@@ -67,7 +65,7 @@ def login
     login_or_exit = PROMPT.select("", %w(Login Exit))
     case login_or_exit
     when "Login"
-        puts "\n" * 35
+        
         find_user = PROMPT.ask("What is your username?".light_cyan, required: true)
         @@current_user = User.find_by(username: find_user)
         if @@current_user == nil
@@ -78,10 +76,10 @@ def login
         enter_password = PROMPT.mask('password:', echo: true,required: true)
         if enter_password == @@current_user.password
             @@current_user
-            main
+            Controller.main
         else
-            puts "\n" * 35
-            puts "Access denied.".light_red
+       
+            puts "That aint it chief.".light_red
             puts "Please try again!".light_yellow
             login 
         end
@@ -91,26 +89,27 @@ def login
     end       
 end
 
-def main 
-puts "\n" * 30
+def self.main 
+
 if @@current_user == nil
-    puts "You have to be logged in to use IceBreaker :("
+    puts "You have to be logged in to use soundtrack :("
     Controller.login
 else
-puts "Hello #{@@current_user.username.light_yellow.bold}!"
+puts "Hey #{@@current_user.username.light_yellow.bold}!"
 puts "\n" 
+
+#menu function
 menu_selection = PROMPT.select("Select from the following options?", %w(TheSoundTrack2MYLife AddAVibe RandomVibes RandomArtistLyrics EditMyInfo LogOut))
 case menu_selection
 when "TheSoundTrack2MYLife"
     menu_selection = PROMPT.select('Select from the following options.', %w(ShowAll DeleteAll Main))
     case menu_selection
     when "ShowAll"
-        puts "\n" * 35
-        Controller.display(@@current_user.user_lyrics)
-        menu_selection = PROMPT.select('Select from the following options.', %w( Back))
-        case menu_selection
+        Controller.display(@@current_user.lyrics)
+        new_menu_selection = PROMPT.select('Back', %w( Back))
+        case new_menu_selection
         when "Back"
-        main
+        Controller.main
         end
     when "DeleteAll"
         are_you_sure = PROMPT.yes?('Are you sure you want to delete all?') do |q|
@@ -118,26 +117,15 @@ when "TheSoundTrack2MYLife"
         end
         if are_you_sure
         @@current_user.facts.delete_all
-        main
+        Controller.main
         else
-        main
+        Controller.main
         end
     when "Main"
-        main
+        Controller.main
     end
 when "AddAVibe"
-    puts "\n" * 35
     new_lyrics = Lyric.new_lyrics
-    
-    binding.pry
-    
-    # artist = PROMPT.ask("Who is the artist?")
-    # while artist == nil 
-    #     artist = PROMPT.ask("Who is the artist?")
-    # end
-    # song_title = PROMPT.ask("What is the name of the song?")
-    # lyric = Lyric.new_lyrics(artist, song_title)
-    #Controller.display(lyric)
     save_lyric = PROMPT.select("You can save this awesome track or listen to it right now!", %W(Save Listen Main))
     case save_lyric
     when "Listen"
@@ -148,16 +136,59 @@ when "AddAVibe"
     elsif user_input == "2"
         Launchy.open(urls_for_song)
     end
-    when "Save"                        
-    
-    
-    
-    UserLyric.save_lyrics(@@current_user.id,new_lyrics.id)
-    main
     when "Main"
-    main
+    Controller.main    
+    when "Save"                       
+    UserLyric.save_lyrics(@@current_user.id, new_lyrics.id)
+    end
+    Controller.main.new  
+when "EditMyInfo"
+    edit_prompt = PROMPT.select("What would you like to change?", %W(Username Password))
+    case edit_prompt
+    when "Username"
+        new_username = PROMPT.ask("Type in your new Username:")
+        while new_username == nil
+            new_username =  PROMPT.ask("Type in your new Username.")
+        end
+        @@current_user.username = new_username
+        @@current_user.save
+        puts "Your username has been changed to #{@@current_user.username}"
+        main
+    when "Password"
+        given_password = PROMPT.mask("What do you want your new password to be?".light_green, required: true) do |q|
+        q.validate(/^(?=.*[a-zA-Z])(?=.*[0-9]).{6,}$/)
+        q.messages[:valid?] = 'Your passowrd must be at least 8 characters and include one number and one letter...just like everyother site....'
+    end
+    confirm_password = PROMPT.mask("Please confirm that password".light_green, required: true)
+    if given_password == confirm_password
+        @@current_user.password = given_password
+        @@current_user.save
+        puts "Your password has been changed."
+        intro
+    end
+    end
+
+when "LogOut"
+end
+
+
+end
+end
+
+
+#return object associated with the lyric id
+#make when object  is == userlyric.lyric_id appear on the screen
+#that should be the lyric instance attached to the user
+#info should include the artist of the song
+#link to the lyrics
+#link to youtube
+
+
+def self.display(lyrics_array)
+    lyrics_array.each do |instance|
+    puts "#{instance.song_title}".light_green, "by " "#{instance.artist}".light_green, "lyrics:" "#{instance.lyrics} \n".light_green 
+  #binding.pry
     end
 end
-end
-end
+
 end

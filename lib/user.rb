@@ -1,4 +1,5 @@
 class User < ActiveRecord::Base
+    
     has_many :user_lyrics
     has_many :lyrics, through: :user_lyrics
 
@@ -6,7 +7,7 @@ class User < ActiveRecord::Base
     def self.create_user
         new_user = self.get_username
         new_user.password = self.set_password
-        puts "\n" * 35
+      
         new_user.save
         @@current_user = new_user
     end  
@@ -20,8 +21,8 @@ class User < ActiveRecord::Base
            if User.find_by(username: given_username) == nil
                 User.create(username: given_username)           
             else
-                puts "#{given_username.light_red.bold} is already taken. Please try to be original."
-                 self.get_username 
+                puts "#{given_username.light_red.bold} is already taken but whatever just make a new password."
+                User.create(username: given_username)  
             end
         else 
             self.get_username
@@ -36,10 +37,9 @@ def self.set_password
     end 
     confirm_password = PROMPT.mask("Please confirm that password".light_green, required: true)       
     if given_password == confirm_password
-        puts "\n" * 15
+       
         given_password
     else
-        puts "\n" * 15
         puts "Passwords didn't match. Try again".light_red
         self.set_password
     end
@@ -49,8 +49,21 @@ end
 def self.login(username: find_user)
     user = self.get_username
     user.password = self.get_password
-    @current_user = user
+    @@current_user = user
 end
 
 
+def get_lyrics
+    UserLyric.all.select do |save| 
+        result = save.user_id == self.id
+        Lyric.all.map do |song| 
+        song.id == get_lyrics.lyric_id
+        end
+    end
+end
+
+def get_lyrics_actual
+    Lyric.all.map {|song| song.id == get_lyrics.lyric_id}
+
+end
 end
