@@ -41,17 +41,18 @@ def about
                
                 # artist = PROMPT.ask("Who is the artist?")
                 # song_title = PROMPT.ask("What is the name of the song?")
-                lyric = Lyric.new_lyrics
-                Controller.display(@@current_user.lyrics)
+                lyric = Lyric.new_lyrics(@@current_user)
+                # Controller.display(@@current_user.lyrics)
                 save_lyric = PROMPT.select("You can save this awesome track or open that sucker up right now and vibe ", %W(Save Listen Main))
                 case save_lyric
                 when "Save"                        
-                    UserLyric.save_lyrics(@@current_user.id,lyric.id)
+                    # UserLyric.save_lyrics(@@current_user.lyrics)
+                  puts "We'll add that to your list"
                     Controller.main
                 when "Main"
                     Controller.main
                 when "Listen"
-                    Launchy.open(urls_for_song)
+                    # Lyrics.all.select.open(urls_for_song)
                 end
             else
                 Controller.main
@@ -125,23 +126,40 @@ when "TheSoundTrack2MYLife"
         Controller.main
     end
 when "AddAVibe"
-    new_lyrics = Lyric.new_lyrics
+    new_lyrics = Lyric.new_lyrics(@@current_user)
+    
     save_lyric = PROMPT.select("You can save this awesome track or listen to it right now!", %W(Save Listen Main))
     case save_lyric
     when "Listen"
     puts "\nPress 1 to open lyrics in browser, or press 2 to listen on YouTube.".colorize(:light_blue)
+    
     user_input = gets.chomp
     if user_input == "1"
-        Launchy.open(genius_url_lyrics)
+        Launchy.open(@@current_user.lyrics.select {|song| song.lyrics == new_lyrics})
+        # Launchy.open(@@current_user.lyrics.find_by(lyrics:
     elsif user_input == "2"
         Launchy.open(urls_for_song)
     end
     when "Main"
     Controller.main    
     when "Save"                       
-    UserLyric.save_lyrics(@@current_user.id, new_lyrics.id)
+    puts "sweet we'll add that to your diary"
+end
+    Controller.main
+when "RandomVibes"
+    puts "Coming Soon...."
+    back = PROMPT.select("", %W(Main))
+    case back     
+    when "Main"
+        Controller.main
     end
-    Controller.main.new  
+when "RandomArtistLyrics"
+    puts "Coming Soon...."
+    back = PROMPT.select("", %W(Main))
+    case back     
+    when "Main"
+        Controller.main
+    end
 when "EditMyInfo"
     edit_prompt = PROMPT.select("What would you like to change?", %W(Username Password))
     case edit_prompt
@@ -169,6 +187,7 @@ when "EditMyInfo"
     end
 
 when "LogOut"
+    puts "See you soon!"
 end
 
 
@@ -186,7 +205,7 @@ end
 
 def self.display(lyrics_array)
     lyrics_array.each do |instance|
-    puts "#{instance.song_title}".light_green, "by " "#{instance.artist}".light_green, "lyrics:" "#{instance.lyrics} \n".light_green 
+    puts "Song: ".red, "#{instance.song_title} ".light_green, "by: ".white, "#{instance.artist} ".light_green, "lyrics: ".white,  "#{instance.lyrics} \n".light_blue
   #binding.pry
     end
 end
