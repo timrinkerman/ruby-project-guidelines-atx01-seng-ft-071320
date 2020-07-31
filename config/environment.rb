@@ -11,4 +11,5 @@ ActiveRecord::Base.logger = nil
 require_all 'lib'
 
 #creating prompts for the controller 
+
 PROMPT = TTY::Prompt.new

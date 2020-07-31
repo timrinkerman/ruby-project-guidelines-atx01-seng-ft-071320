@@ -106,7 +106,9 @@ when "TheSoundTrack2MYLife"
     menu_selection = PROMPT.select('Select from the following options.', %w(ShowAll DeleteAll Main))
     case menu_selection
     when "ShowAll"
-        Controller.display(@@current_user.lyrics)
+        @@current_user.reload
+        lyric_list = @@current_user.lyrics 
+        Controller.display(lyric_list)
         new_menu_selection = PROMPT.select('Back', %w( Back))
         case new_menu_selection
         when "Back"
@@ -189,7 +191,6 @@ when "EditMyInfo"
 when "LogOut"
     puts "See you soon!"
 end
-
 
 
 end
