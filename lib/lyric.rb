@@ -60,7 +60,7 @@ def self.find_song(artist, song_title, user)
     @@current_song = Lyric.create(artist: artist_name, song_title: song_name)
     @@current_song.lyrics = genius_url_lyrics
     # @@current_song.music_video = 
-    # UserLyric.create(user.id, @@current_song.id)
+    UserLyric.save_lyrics(user.id, @@current_song.id)
     @@current_song.save
     
    
